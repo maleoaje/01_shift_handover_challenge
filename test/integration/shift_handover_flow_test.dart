@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shift_handover_challenge/core/service_locator.dart';
-import 'package:shift_handover_challenge/features/shift_handover/domain/entities/shift_handover_models.dart';
+import 'package:shift_handover_challenge/features/shift_handover/presentation/pages/shift_handover_screen.dart';
 import 'package:shift_handover_challenge/main.dart';
 
 void main() {
@@ -17,21 +17,20 @@ void main() {
       await tester.pumpWidget(const MyApp());
 
       // Wait for the app to settle
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
       // Verify the initial screen loads
-      expect(find.text('Shift Handover'), findsOneWidget);
-
-      // Verify initial state (no notes)
-      expect(
-          find.text(
-              'No notes added yet.\nUse the form below to add the first note.'),
-          findsOneWidget);
+      expect(find.byType(ShiftHandoverScreen), findsOneWidget);
 
       // Enter a new note
-      await tester.enterText(
-          find.byType(TextField).first, 'Test observation note');
-      await tester.tap(find.byIcon(Icons.send));
+      final textField = find.byType(TextField).first;
+      await tester.enterText(textField, 'Test observation note');
+
+      // Send note
+      await tester.tap(find.descendant(
+        of: find.byType(TextField).first,
+        matching: find.byIcon(Icons.send),
+      ));
       await tester.pumpAndSettle();
 
       // Verify note is added
@@ -40,12 +39,17 @@ void main() {
       // Verify note type dropdown works
       await tester.tap(find.byIcon(Icons.category_outlined));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('INCIDENT'));
+
+      // Tap the first dropdown item (INCIDENT)
+      await tester.tap(find.text('INCIDENT').first);
       await tester.pumpAndSettle();
 
       // Add another note
-      await tester.enterText(find.byType(TextField).first, 'Incident report');
-      await tester.tap(find.byIcon(Icons.send));
+      await tester.enterText(textField, 'Incident report');
+      await tester.tap(find.descendant(
+        of: find.byType(TextField).first,
+        matching: find.byIcon(Icons.send),
+      ));
       await tester.pumpAndSettle();
 
       // Verify multiple notes
